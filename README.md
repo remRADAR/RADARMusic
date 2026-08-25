@@ -44,3 +44,9 @@ Set `SUPABASE_ANON_KEY` in addition to the existing Supabase URL and service-rol
 ## Social sharing metadata
 
 The page head now includes canonical URL, Open Graph, and Twitter Card tags with the RADARMusic title, description, and WEBP artwork fallback. When a release is resolved, the browser updates the document title, canonical URL, Open Graph title/description/image, and Twitter title/description/image to the matched release identity. Published release routes should set the same values during server-side or static page generation so social crawlers receive release-specific cards without executing browser JavaScript.
+
+## RADARMatrix portal surface
+
+The public release experience now follows a mobile-app-style, glassmorphic portal model. A persistent identity hero keeps artwork, artist, title, and release metadata fixed above a segmented surface switcher for Listen, Watch, Shorts, and Press. Listen expands the verified Spotify source through the official Spotify embed and renders the remaining providers as transparent destination rows; Watch uses an official YouTube iframe surface; Shorts uses a horizontal snap-style rail; Press uses editorial feature cards.
+
+The example release is wired to the public Spotify preview for `Cut To The Feeling` by Carly Rae Jepsen so the embedded listening surface is internally coherent. The Watch, Shorts, and Press content includes demo placeholders and should be replaced with approved release-specific assets before publication. The existing resolver remains the source for replacing the example release at runtime, and the analytics, social metadata, authenticated dashboard, and notification foundations remain available behind the same release model.
