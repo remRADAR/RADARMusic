@@ -1,3 +1,5 @@
+import { notifyCreatorOfClick } from '../_lib/notify.js';
+
 const allowedEvents = new Set(['page_view', 'store_click']);
 
 function clean(value, max = 500) {
@@ -30,6 +32,7 @@ export default async function handler(req, res) {
       body: JSON.stringify(row),
     });
     if (!response.ok) return res.status(502).json({ error: 'Analytics storage unavailable.' });
+    await notifyCreatorOfClick(row);
     return res.status(202).json({ accepted: true, persisted: true });
   } catch {
     return res.status(400).json({ error: 'Invalid analytics payload.' });

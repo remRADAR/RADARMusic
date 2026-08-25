@@ -109,8 +109,14 @@ if (window.location.pathname.startsWith('/dashboard')) {
     const result = await response.json();
     if (!response.ok) { message.textContent = result.error || 'Sign-in failed.'; return; }
     message.textContent = 'Signed in. Loading analytics…';
-    const summary = await fetch(`/api/analytics/summary?slug=${encodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || 'home')}`).then((item) => item.json());
-    document.querySelector('#analytics-grid').innerHTML = `<div><strong>${summary.views}</strong><span>Page views</span></div><div><strong>${summary.unique_sessions}</strong><span>Unique sessions</span></div><div><strong>${summary.clicks}</strong><span>Store clicks</span></div><div><strong>${summary.top_provider}</strong><span>Top destination</span></div><button class="button button--quiet" id="sign-out" type="button">Sign out</button>`;
+    const summary = await fetch(`/api/analytics/summary?slug=${encodeURIComponent(new URLSearchParams(window.location.search).get('release') || 'home')}`).then((item) => item.json());
+    document.querySelector('#analytics-grid').innerHTML = `<div><strong>${summary.views}</strong><span>Page views</span></div><div><strong>${summary.unique_sessions}</strong><span>Unique sessions</span></div><div><strong>${summary.clicks}</strong><span>Store clicks</span></div><div><strong>${summary.top_provider}</strong><span>Top destination</span></div><form class="notification-form" id="notification-form"><label for="notification-channel">Click alert channel</label><select id="notification-channel" name="channel"><option value="email">Email</option><option value="sms">SMS</option></select><label for="notification-destination">Destination</label><input id="notification-destination" name="destination" type="text" placeholder="creator@example.com or +15551234567" required /><label class="consent-check"><input name="consent" type="checkbox" required /> I agree to receive click-through alerts for this release.</label><button class="button button--solid" type="submit">Enable alerts <span>↗</span></button><p id="notification-message" role="status"></p></form><button class="button button--quiet" id="sign-out" type="button">Sign out</button>`;
+    document.querySelector('#notification-form').addEventListener('submit', async (notificationEvent) => {
+      notificationEvent.preventDefault();
+      const formData = Object.fromEntries(new FormData(notificationEvent.currentTarget));
+      const notificationResponse = await fetch('/api/notifications/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...formData, release_slug: new URLSearchParams(window.location.search).get('release') || 'home' }) });
+      document.querySelector('#notification-message').textContent = notificationResponse.ok ? 'Alerts enabled.' : (await notificationResponse.json()).error || 'Unable to enable alerts.';
+    });
     document.querySelector('#sign-out').addEventListener('click', async () => { await fetch('/api/auth/logout', { method: 'POST' }); window.location.reload(); });
   });
 }
