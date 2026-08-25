@@ -1,4 +1,5 @@
 import './styles.css';
+import { initAnalytics } from './analytics.js';
 
 const icon = '/assets/radarmusic-icon.webp';
 const opening = '/assets/radarcharts-opening.gif';
@@ -32,7 +33,7 @@ app.innerHTML = `
       <div class="hero__meta"><span>01 / 04</span><span>RADARCHARTS.NET</span><span>SCROLL TO DISCOVER ↓</span></div>
     </section>
 
-    <section class="sync-panel" id="sync" aria-labelledby="sync-title"><div class="sync-panel__intro"><p class="eyebrow">CREATE YOUR RELEASE PORTAL</p><h2 id="sync-title">One link in.<br /><em>Everywhere out.</em></h2><p>Paste a Spotify or Apple Music release link. We’ll normalize the release identity, find the best available destinations, and let you review every match before publishing.</p></div><form class="sync-form" id="sync-form"><label for="release-url">Spotify or Apple Music URL</label><div class="sync-form__row"><input id="release-url" name="url" type="url" placeholder="https://open.spotify.com/track/..." required /><button class="button button--solid" type="submit">Find release <span>↗</span></button></div><p class="sync-form__hint">Official links only. No passwords, streams, or protected content are collected.</p></form><div class="sync-result" id="sync-result" aria-live="polite"></div></section>
+    <section class="sync-panel" id="sync" aria-labelledby="sync-title"><div class="sync-panel__intro"><p class="eyebrow">CREATE YOUR RELEASE PORTAL</p><h2 id="sync-title">One link in.<br /><em>Everywhere out.</em></h2><p>Paste a Spotify or Apple Music release link. We’ll normalize the release identity, find the best available destinations, and let you review every match before publishing.</p></div><form class="sync-form" id="sync-form"><label for="release-url">Spotify or Apple Music URL</label><div class="sync-form__row"><input id="release-url" name="url" type="url" placeholder="https://open.spotify.com/track/..." required /><button class="button button--solid" type="submit">Find release <span>↗</span></button></div><p class="sync-form__hint">Official links only. No passwords, streams, or protected content are collected.</p></form><div class="sync-result" id="sync-result" aria-live="polite"></div><section class="analytics-panel" id="analytics-panel" aria-labelledby="analytics-title" hidden><div><p class="eyebrow">CREATOR VIEW · LAST 30 DAYS</p><h3 id="analytics-title">Release analytics</h3></div><div class="analytics-grid" id="analytics-grid"><p>Loading analytics…</p></div></section></section>
 
     <section class="marquee" aria-label="RADARMusic statement"><div>LISTEN · DISCOVER · CONNECT · LISTEN · DISCOVER · CONNECT · </div></section>
 
@@ -90,3 +91,16 @@ syncForm.addEventListener('submit', async (event) => {
     syncResult.innerHTML = `<p><strong>Couldn’t find that release.</strong> ${error.message}</p>`;
   }
 });
+
+
+initAnalytics();
+const analyticsPanel = document.querySelector('#analytics-panel');
+if (new URLSearchParams(window.location.search).get('manage') === '1') {
+  analyticsPanel.hidden = false;
+  fetch(`/api/analytics/summary?slug=${encodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || 'home')}`)
+    .then((response) => response.json())
+    .then((data) => {
+      document.querySelector('#analytics-grid').innerHTML = `<div><strong>${data.views}</strong><span>Page views</span></div><div><strong>${data.unique_sessions}</strong><span>Unique sessions</span></div><div><strong>${data.clicks}</strong><span>Store clicks</span></div><div><strong>${data.top_provider}</strong><span>Top destination</span></div>`;
+    })
+    .catch(() => { document.querySelector('#analytics-grid').innerHTML = '<p>Analytics are temporarily unavailable.</p>'; });
+}
