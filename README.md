@@ -1,0 +1,28 @@
+# RADARMusic
+
+RADARMusic is a lightweight release-portal starter with a Push.fm-inspired artist workflow: paste one Spotify or Apple Music release URL, resolve its canonical metadata, discover listening destinations, review the matches, and publish only approved official links.
+
+## Current flow
+
+The browser submits the source URL to `POST /api/release/resolve`. The serverless handler validates that the URL belongs to Spotify or Apple Music, calls a provider-supported metadata endpoint, normalizes the release identity, and returns a source link plus provider-specific search/deep-link destinations. The UI marks the original source as **verified** and all catalog search destinations as **needs review** until the artist confirms them.
+
+The implementation deliberately does not scrape protected store pages, bypass authentication, proxy copyrighted streams, or fabricate an embed. A store is rendered as an outbound listening destination unless an official embed URL is explicitly known and approved by that provider.
+
+## Provider notes
+
+Spotify source metadata currently resolves through Spotify’s public oEmbed endpoint, with the Spotify Web API adapter reserved for richer metadata when server-side credentials are configured. Apple Music source metadata currently resolves through the public iTunes Lookup endpoint. Audiomack, Boomplay, Deezer, TIDAL, Amazon Music, and YouTube Music are returned as official search destinations in this lightweight slice; they can be promoted to verified matches by adding authenticated provider adapters and a review/persistence step.
+
+## Deployment
+
+This repository is structured for a Vite build with Vercel-style serverless functions under `api/`. Run:
+
+```bash
+npm install
+npm run build
+```
+
+For richer Spotify resolution, configure the server-side credentials in the deployment environment and extend `api/release/resolve.js` to use Spotify’s Web API. Never expose provider secrets in browser code. If persistent artist portals are added, store only normalized metadata and artist-approved canonical URLs in a server-side database.
+
+## Assets
+
+The opening animation is `public/assets/radarcharts-opening.gif`. The supplied RADARMusic WEBP is `public/assets/radarmusic-icon.webp` and is used as the page icon, favicon, Apple touch icon, hero mark, and portal artwork.

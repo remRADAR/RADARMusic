@@ -32,6 +32,8 @@ app.innerHTML = `
       <div class="hero__meta"><span>01 / 04</span><span>RADARCHARTS.NET</span><span>SCROLL TO DISCOVER ↓</span></div>
     </section>
 
+    <section class="sync-panel" id="sync" aria-labelledby="sync-title"><div class="sync-panel__intro"><p class="eyebrow">CREATE YOUR RELEASE PORTAL</p><h2 id="sync-title">One link in.<br /><em>Everywhere out.</em></h2><p>Paste a Spotify or Apple Music release link. We’ll normalize the release identity, find the best available destinations, and let you review every match before publishing.</p></div><form class="sync-form" id="sync-form"><label for="release-url">Spotify or Apple Music URL</label><div class="sync-form__row"><input id="release-url" name="url" type="url" placeholder="https://open.spotify.com/track/..." required /><button class="button button--solid" type="submit">Find release <span>↗</span></button></div><p class="sync-form__hint">Official links only. No passwords, streams, or protected content are collected.</p></form><div class="sync-result" id="sync-result" aria-live="polite"></div></section>
+
     <section class="marquee" aria-label="RADARMusic statement"><div>LISTEN · DISCOVER · CONNECT · LISTEN · DISCOVER · CONNECT · </div></section>
 
     <section class="section listen" id="listen">
@@ -68,3 +70,23 @@ toggle.addEventListener('click', () => { playing = !playing; toggle.textContent 
 document.querySelectorAll('a[href="#listen"]').forEach((link) => link.addEventListener('click', () => player.classList.add('is-visible')));
 
 if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) dismiss();
+
+const syncForm = document.querySelector('#sync-form');
+const syncResult = document.querySelector('#sync-result');
+syncForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const url = new FormData(syncForm).get('url');
+  syncResult.className = 'sync-result is-loading';
+  syncResult.innerHTML = '<span class="sync-result__spinner"></span><p>Reading release identity and searching destinations…</p>';
+  try {
+    const response = await fetch('/api/release/resolve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Unable to resolve this release.');
+    syncResult.className = 'sync-result is-ready';
+    syncResult.innerHTML = `<div class="release-preview">${result.metadata.artwork ? `<img src="${result.metadata.artwork}" alt="" />` : `<img src="${icon}" alt="" />`}<div><span class="eyebrow">MATCHED RELEASE · ${result.metadata.source}</span><h3>${result.metadata.title}</h3><p>${result.metadata.artist}${result.metadata.album ? ` · ${result.metadata.album}` : ''}</p></div></div><div class="match-list"><div class="match-list__header"><span>DESTINATIONS</span><span>${result.stores.length} FOUND · REVIEW BEFORE PUBLISHING</span></div>${result.stores.map((store) => `<a class="match" href="${store.url}" target="_blank" rel="noreferrer"><span class="match__status ${store.status}"></span><strong>${store.name}</strong><span>${store.status === 'verified' ? 'Verified source' : 'Search destination'}</span><b>↗</b></a>`).join('')}</div><p class="sync-result__policy">${result.policy}</p>`;
+    document.querySelector('#sync').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (error) {
+    syncResult.className = 'sync-result is-error';
+    syncResult.innerHTML = `<p><strong>Couldn’t find that release.</strong> ${error.message}</p>`;
+  }
+});
