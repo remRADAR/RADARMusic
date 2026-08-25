@@ -14,7 +14,7 @@ function sourceFromUrl(raw) {
   throw new Error('Only Spotify and Apple Music links are supported as source links.');
 }
 
-function searchUrl(name, base, key, provider) {
+function searchUrl(name, base, key) {
   const params = new URLSearchParams({ [key]: name });
   return `https://${base}?${params.toString()}`;
 }
@@ -23,8 +23,18 @@ async function spotifyOembed(raw) {
   const response = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(raw)}`);
   if (!response.ok) throw new Error('Spotify could not resolve that link.');
   const data = await response.json();
-  const parts = (data.title || '').split(' - ');
-  return { title: parts[0] || data.title || 'Untitled release', artist: parts[1] || 'Unknown artist', artwork: data.thumbnail_url || '', sourceUrl: raw, source: 'Spotify' };
+  return { title: data.title || 'Untitled release', artist: 'Unknown artist', artwork: data.thumbnail_url || '', sourceUrl: raw, source: 'Spotify' };
+}
+
+async function spotifyTrack(raw, id) {
+  if (!process.env.SPOTIFY_CLIENT_ID || !process.env.SPOTIFY_CLIENT_SECRET) return spotifyOembed(raw);
+  const tokenResponse = await fetch('https://accounts.spotify.com/api/token', { method: 'POST', headers: { Authorization: `Basic ${Buffer.from(`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`).toString('base64')}`, 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'grant_type=client_credentials' });
+  if (!tokenResponse.ok) return spotifyOembed(raw);
+  const token = await tokenResponse.json();
+  const response = await fetch(`https://api.spotify.com/v1/tracks/${encodeURIComponent(id)}`, { headers: { Authorization: `Bearer ${token.access_token}` } });
+  if (!response.ok) return spotifyOembed(raw);
+  const data = await response.json();
+  return { title: data.name || 'Untitled release', artist: data.artists?.map((artist) => artist.name).join(', ') || 'Unknown artist', album: data.album?.name || '', artwork: data.album?.images?.[0]?.url || '', releaseDate: data.album?.release_date || '', sourceUrl: raw, source: 'Spotify', genre: '' };
 }
 
 async function appleLookup(raw, id) {
@@ -46,14 +56,13 @@ export default async function handler(req, res) {
     const { url } = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
     if (!url) return res.status(400).json({ error: 'A Spotify or Apple Music URL is required.' });
     const source = sourceFromUrl(url);
-    const metadata = source.provider === 'Spotify' ? await spotifyOembed(url) : await appleLookup(url, source.id);
-    const verified = [
-      { name: metadata.source, url: metadata.sourceUrl, type: 'source', status: 'verified', label: 'Source link' },
-      { name: 'Apple Music', url: metadata.source === 'Apple Music' ? metadata.sourceUrl : searchUrl(`${metadata.artist} ${metadata.title}`, 'music.apple.com/us/search', 'term'), type: metadata.source === 'Apple Music' ? 'source' : 'deep-link', status: metadata.source === 'Apple Music' ? 'verified' : 'search' },
-      { name: 'Spotify', url: metadata.source === 'Spotify' ? metadata.sourceUrl : searchUrl(`${metadata.artist} ${metadata.title}`, 'open.spotify.com/search', 'query'), type: metadata.source === 'Spotify' ? 'source' : 'deep-link', status: metadata.source === 'Spotify' ? 'verified' : 'search' },
-    ];
-    const discovered = STORE_SEARCHES.map(([name, base, key]) => ({ name, url: searchUrl(`${metadata.artist} ${metadata.title}`, base, key), type: 'deep-link', status: 'needs-review', label: 'Search destination' }));
-    return res.status(200).json({ metadata, stores: [...verified, ...discovered], policy: 'Only source URLs and official search/deep-link destinations are returned. No protected pages or streams are scraped.' });
+    const metadata = source.provider === 'Spotify' ? await spotifyTrack(url, source.id) : await appleLookup(url, source.id);
+    const stores = [{ name: metadata.source, url: metadata.sourceUrl, type: 'source', status: 'verified', label: 'Source link' }];
+    for (const [name, base, key] of [['Apple Music', 'music.apple.com/us/search', 'term'], ['Spotify', 'open.spotify.com/search', 'query'], ...STORE_SEARCHES]) {
+      if (name === metadata.source) continue;
+      stores.push({ name, url: searchUrl(`${metadata.artist} ${metadata.title}`, base, key), type: 'deep-link', status: 'needs-review', label: 'Search destination' });
+    }
+    return res.status(200).json({ metadata, stores, policy: 'Only source URLs and official search/deep-link destinations are returned. No protected pages or streams are scraped.' });
   } catch (error) {
     return res.status(400).json({ error: error.message || 'Unable to resolve this release.' });
   }
