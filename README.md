@@ -32,3 +32,11 @@ The opening animation is `public/assets/radarcharts-opening.gif`. The supplied R
 Every published page records a `page_view` event and every outbound HTTP store link records a `store_click` event. Events contain the release slug, a browser-generated pseudonymous session ID, provider label, target URL, referrer origin, and a coarse viewport bucket; raw IP addresses, user-agent strings, and full referrer URLs are not stored. The creator summary is intentionally gated behind `?manage=1` in this lightweight slice and reports page views, unique sessions, total store clicks, and top destination.
 
 For production persistence, apply `docs/analytics-migration.sql` to the chosen Postgres project and configure `SUPABASE_URL` plus the server-only `SUPABASE_SERVICE_ROLE_KEY` from `.env.example`. The current repository does not automatically apply this migration to the available Supabase project because that project is named `NairaLeap`; selecting a production analytics database requires explicit project confirmation.
+
+## Creator authentication and roles
+
+The creator dashboard is available at `/dashboard` and no longer relies on `?manage=1`. Sign-in is handled by Supabase Auth through a server-side session cookie named `__Host-radarmusic_session`, configured as `HttpOnly`, `Secure`, `SameSite=Lax`, and one-hour expiry. The browser never receives or stores the Supabase access token.
+
+Roles are read from server-managed Supabase `app_metadata.role` values. Supported roles are `creator` and `admin`; unknown or missing roles are denied by default. A creator may access only release slugs listed in `app_metadata.release_slugs`, while an administrator may access all release analytics. The summary endpoint enforces both authentication and ownership server-side, so hiding the dashboard in the browser is not treated as authorization.
+
+Set `SUPABASE_ANON_KEY` in addition to the existing Supabase URL and service-role key. The service-role key must remain server-only. The auth flow assumes email/password sign-in is enabled in Supabase Auth and that role metadata is assigned through a trusted administrative process, never from client input.

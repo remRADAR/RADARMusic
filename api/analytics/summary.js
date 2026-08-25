@@ -1,7 +1,12 @@
+import { requireRole } from '../_lib/auth.js';
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+  const user = await requireRole(req, res);
+  if (!user) return;
   const slug = typeof req.query?.slug === 'string' ? req.query.slug.slice(0, 120) : 'home';
+  if (user.role !== 'admin' && !user.releaseSlugs.includes(slug)) return res.status(403).json({ error: 'You do not have access to this release.' });
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return res.status(200).json({ configured: false, views: 0, unique_sessions: 0, clicks: 0, top_provider: '—' });
   const query = new URLSearchParams({ select: 'event_name,session_id,provider', release_slug: `eq.${slug}`, limit: '5000' });
   const response = await fetch(`${process.env.SUPABASE_URL}/rest/v1/radarmusic_analytics_events?${query}`, { headers: { apikey: process.env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}` } });

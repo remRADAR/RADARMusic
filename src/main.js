@@ -17,7 +17,7 @@ app.innerHTML = `
   <main class="site-shell">
     <nav class="nav" aria-label="Primary navigation">
       <a class="brand" href="#top" aria-label="The RADARMusic home"><img src="${icon}" alt="" /><span>THE<br /><b>RADAR</b>MUSIC</span></a>
-      <div class="nav__links"><a href="#listen">Listen</a><a href="#story">Story</a><a href="#credits">Credits</a></div>
+      <div class="nav__links"><a href="#listen">Listen</a><a href="#story">Story</a><a href="#credits">Credits</a><a href="/dashboard">Creator login</a></div>
       <button class="nav__menu" type="button" aria-label="Open menu"><i></i><i></i></button>
     </nav>
 
@@ -95,12 +95,20 @@ syncForm.addEventListener('submit', async (event) => {
 
 initAnalytics();
 const analyticsPanel = document.querySelector('#analytics-panel');
-if (new URLSearchParams(window.location.search).get('manage') === '1') {
+if (window.location.pathname.startsWith('/dashboard')) {
   analyticsPanel.hidden = false;
-  fetch(`/api/analytics/summary?slug=${encodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || 'home')}`)
-    .then((response) => response.json())
-    .then((data) => {
-      document.querySelector('#analytics-grid').innerHTML = `<div><strong>${data.views}</strong><span>Page views</span></div><div><strong>${data.unique_sessions}</strong><span>Unique sessions</span></div><div><strong>${data.clicks}</strong><span>Store clicks</span></div><div><strong>${data.top_provider}</strong><span>Top destination</span></div>`;
-    })
-    .catch(() => { document.querySelector('#analytics-grid').innerHTML = '<p>Analytics are temporarily unavailable.</p>'; });
+  document.querySelector('#analytics-grid').innerHTML = '<form class="auth-form" id="auth-form"><label for="creator-email">Creator email</label><input id="creator-email" name="email" type="email" autocomplete="email" required /><label for="creator-password">Password</label><input id="creator-password" name="password" type="password" autocomplete="current-password" required /><button class="button button--solid" type="submit">Sign in <span>↗</span></button><p id="auth-message" role="status"></p></form>';
+  document.querySelector('#auth-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const message = document.querySelector('#auth-message');
+    message.textContent = 'Signing in…';
+    const fields = Object.fromEntries(new FormData(event.currentTarget));
+    const response = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fields) });
+    const result = await response.json();
+    if (!response.ok) { message.textContent = result.error || 'Sign-in failed.'; return; }
+    message.textContent = 'Signed in. Loading analytics…';
+    const summary = await fetch(`/api/analytics/summary?slug=${encodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || 'home')}`).then((item) => item.json());
+    document.querySelector('#analytics-grid').innerHTML = `<div><strong>${summary.views}</strong><span>Page views</span></div><div><strong>${summary.unique_sessions}</strong><span>Unique sessions</span></div><div><strong>${summary.clicks}</strong><span>Store clicks</span></div><div><strong>${summary.top_provider}</strong><span>Top destination</span></div><button class="button button--quiet" id="sign-out" type="button">Sign out</button>`;
+    document.querySelector('#sign-out').addEventListener('click', async () => { await fetch('/api/auth/logout', { method: 'POST' }); window.location.reload(); });
+  });
 }
