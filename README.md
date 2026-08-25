@@ -40,3 +40,7 @@ The creator dashboard is available at `/dashboard` and no longer relies on `?man
 Roles are read from server-managed Supabase `app_metadata.role` values. Supported roles are `creator` and `admin`; unknown or missing roles are denied by default. A creator may access only release slugs listed in `app_metadata.release_slugs`, while an administrator may access all release analytics. The summary endpoint enforces both authentication and ownership server-side, so hiding the dashboard in the browser is not treated as authorization.
 
 Set `SUPABASE_ANON_KEY` in addition to the existing Supabase URL and service-role key. The service-role key must remain server-only. The auth flow assumes email/password sign-in is enabled in Supabase Auth and that role metadata is assigned through a trusted administrative process, never from client input.
+
+## Social sharing metadata
+
+The page head now includes canonical URL, Open Graph, and Twitter Card tags with the RADARMusic title, description, and WEBP artwork fallback. When a release is resolved, the browser updates the document title, canonical URL, Open Graph title/description/image, and Twitter title/description/image to the matched release identity. Published release routes should set the same values during server-side or static page generation so social crawlers receive release-specific cards without executing browser JavaScript.

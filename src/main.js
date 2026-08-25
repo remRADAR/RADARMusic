@@ -1,5 +1,6 @@
 import './styles.css';
 import { initAnalytics } from './analytics.js';
+import { applyReleaseMeta } from './social-meta.js';
 
 const icon = '/assets/radarmusic-icon.webp';
 const opening = '/assets/radarcharts-opening.gif';
@@ -84,6 +85,7 @@ syncForm.addEventListener('submit', async (event) => {
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Unable to resolve this release.');
     syncResult.className = 'sync-result is-ready';
+    applyReleaseMeta(result.metadata);
     syncResult.innerHTML = `<div class="release-preview">${result.metadata.artwork ? `<img src="${result.metadata.artwork}" alt="" />` : `<img src="${icon}" alt="" />`}<div><span class="eyebrow">MATCHED RELEASE · ${result.metadata.source}</span><h3>${result.metadata.title}</h3><p>${result.metadata.artist}${result.metadata.album ? ` · ${result.metadata.album}` : ''}</p></div></div><div class="match-list"><div class="match-list__header"><span>DESTINATIONS</span><span>${result.stores.length} FOUND · REVIEW BEFORE PUBLISHING</span></div>${result.stores.map((store) => `<a class="match" href="${store.url}" target="_blank" rel="noreferrer"><span class="match__status ${store.status}"></span><strong>${store.name}</strong><span>${store.status === 'verified' ? 'Verified source' : 'Search destination'}</span><b>↗</b></a>`).join('')}</div><p class="sync-result__policy">${result.policy}</p>`;
     document.querySelector('#sync').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (error) {
