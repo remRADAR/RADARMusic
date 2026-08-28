@@ -31,3 +31,9 @@ The browser client was supplied the same controlled resolver response. It change
 ## Remaining verification
 
 Metadata extraction against a user-supplied live campaign URL remains **UNVERIFIED** because no real pre-save URL was provided. Provider pages can change their markup or block automated metadata requests, so production monitoring and a manual metadata fallback remain necessary. Actual Spotify or Apple Music authorization occurs on the original campaign provider and is outside RADARMusic’s control.
+
+## Automatic manual fallback verification
+
+A controlled provider failure returned HTTP 422 with `fallback.eligible: true`, the original Feature.fm campaign URL, the identified provider, and the required fallback-field contract. Submitting valid manual metadata returned HTTP 200 with `provenance: creator-entered` and `scrapeStatus: manual-fallback`; the preserved campaign remained the verified pre-save action and store searches were regenerated from the creator-entered artist/title pair.
+
+The server rejected a `javascript:` artwork value and requires optional artwork to use HTTPS. The browser flow was exercised from the original Profile form through automatic fallback display, title/artist/artwork/date/description entry, server acceptance, automatic transition to Stream, and the explicit `PRE-SAVE · MANUAL FALLBACK` provenance state. A failed remote artwork request also falls back to the RADARMusic page icon.

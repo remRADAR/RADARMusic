@@ -72,3 +72,11 @@ For a supported pre-save URL, the server reads only public HTML metadata such as
 RADARMusic does not collect a fan’s Spotify or Apple Music password, does not claim that a save is complete, and does not call a provider save endpoint on the fan’s behalf. Spotify library saves require authorized user access, while Apple Music pre-add availability is coordinated through the label or distributor. Feature.fm likewise documents that pre-saving involves fan account authorization and can later convert the same campaign into a released smart link.
 
 References: [Spotify Web API](https://developer.spotify.com/documentation/web-api), [Apple Music pre-adds](https://artists.apple.com/support/1118-apple-music-pre-adds), and [Feature.fm pre-save smart links](https://help.feature.fm/articles/360043281971-Creating-A-Pre-Save-Smart-Link).
+
+## Automatic manual metadata fallback
+
+When a supported pre-save campaign URL is valid but its public metadata cannot be read, the resolver now returns an explicit HTTP 422 fallback contract instead of ending the workflow. The Profile interface opens a guided manual form automatically while preserving the original campaign URL and identified provider.
+
+Creators can enter the release title, artist, optional HTTPS artwork URL, optional release date, and optional description. The server validates lengths, date format, artwork protocol, provider eligibility, and the preserved campaign URL before generating the portal. Manual recovery is available only for supported pre-save hosts; it cannot be used to turn an arbitrary URL into a verified campaign.
+
+Recovered portals carry `provenance: creator-entered` and `scrapeStatus: manual-fallback`. The Stream view displays `PRE-SAVE · MANUAL FALLBACK` and `CREATOR-ENTERED DETAILS · VERIFY BEFORE PUBLISHING`, while the original provider link remains the verified continuation action. Missing or unavailable artwork falls back to the RADARMusic page logo.

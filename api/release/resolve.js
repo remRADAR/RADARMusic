@@ -153,6 +153,36 @@ async function fetchPresave(raw, provider) {
   };
 }
 
+function manualPresaveMetadata(raw, provider, input = {}) {
+  const title = String(input.title || '').trim();
+  const artist = String(input.artist || '').trim();
+  const description = String(input.description || '').trim();
+  const releaseDate = String(input.releaseDate || '').trim();
+  if (!title || title.length > 140) throw new Error('Enter a release title between 1 and 140 characters.');
+  if (!artist || artist.length > 140) throw new Error('Enter an artist name between 1 and 140 characters.');
+  if (description.length > 320) throw new Error('Keep the release description under 320 characters.');
+  if (releaseDate && (!/^\d{4}-\d{2}-\d{2}$/.test(releaseDate) || Number.isNaN(Date.parse(`${releaseDate}T00:00:00Z`)))) throw new Error('Enter a valid release date.');
+  const artwork = input.artwork ? safeHttpsUrl(String(input.artwork).trim()) : '';
+  if (input.artwork && !artwork) throw new Error('Artwork must use a secure HTTPS URL.');
+  return {
+    title,
+    artist,
+    album: title,
+    artwork,
+    releaseDate,
+    sourceUrl: raw,
+    actionUrl: raw,
+    source: provider,
+    label: `${provider} pre-save`,
+    type: 'Pre-save',
+    genre: '',
+    description,
+    mode: 'presave',
+    provenance: 'creator-entered',
+    scrapeStatus: 'manual-fallback',
+  };
+}
+
 function buildStores(metadata) {
   const stores = [{ name: metadata.source, url: metadata.actionUrl || metadata.sourceUrl, type: metadata.mode === 'presave' ? 'presave' : 'source', status: 'verified', label: metadata.mode === 'presave' ? 'Continue pre-save' : 'Source link' }];
   for (const [name, base, key] of [['Apple Music', 'music.apple.com/us/search', 'term'], ['Spotify', 'open.spotify.com/search', 'query'], ...STORE_SEARCHES]) {
@@ -168,13 +198,26 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  let submittedUrl = '';
   try {
-    const { url } = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
+    const { url, manual } = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
+    submittedUrl = url || '';
     if (!url) return res.status(400).json({ error: 'A Spotify, Apple Music, or pre-save URL is required.' });
     const source = sourceFromUrl(url);
+    if (manual) {
+      if (source.mode !== 'presave') return res.status(400).json({ error: 'Manual metadata is available only for supported pre-save campaign links.' });
+      const metadata = manualPresaveMetadata(url, source.provider, manual);
+      return res.status(200).json({ metadata, stores: buildStores(metadata), policy: 'The campaign URL is supported, but release metadata was entered by the creator and must be reviewed before publishing. Fans still complete authorization with the original provider.' });
+    }
     const metadata = source.mode === 'presave' ? await fetchPresave(url, source.provider) : source.provider === 'Spotify' ? await spotifyTrack(url, source.id) : await appleLookup(url, source.id);
     return res.status(200).json({ metadata, stores: buildStores(metadata), policy: metadata.mode === 'presave' ? 'Public pre-save metadata is read from supported campaign pages. Fans complete authorization with the original provider; RADARMusic does not collect music-service credentials or claim a completed save.' : 'Only source URLs and official search/deep-link destinations are returned. No protected pages or streams are scraped.' });
   } catch (error) {
+    try {
+      const source = submittedUrl ? sourceFromUrl(submittedUrl) : null;
+      if (source?.mode === 'presave') return res.status(422).json({ error: error.message || 'The pre-save page metadata could not be read.', fallback: { eligible: true, mode: 'manual-presave', sourceUrl: submittedUrl, provider: source.provider, fields: ['title', 'artist', 'artwork', 'releaseDate', 'description'] } });
+    } catch {
+      // The original validation error is returned below.
+    }
     return res.status(400).json({ error: error.message || 'Unable to resolve this release or pre-save link.' });
   }
 }
