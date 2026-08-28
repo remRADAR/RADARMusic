@@ -56,3 +56,19 @@ The example release is wired to the public Spotify preview for `Cut To The Feeli
 The public landing page now uses a four-state, full-viewport presentation inspired by the supplied Framer reference while retaining the original RADARMusic concept and assets. Home uses the artist portrait treatment and release identity; Stream uses the current release cover as the dominant background with the verified Spotify player and store destinations; YouTube uses a channel-cover background with an in-page video surface; Profile uses the artist image behind profile details, release posts, and the Spotify/Apple resolver form.
 
 The tab rail changes the major background and foreground content together without page navigation. Desktop uses a vertical indexed rail, while mobile moves the same controls into a fixed bottom pill. The existing opening GIF, RADARMusic icon/favicon, social metadata, analytics, resolver, sharing control, and authenticated creator route remain integrated. Current YouTube, profile imagery, and release-post content are clearly marked demo content and require artist-approved media before publication.
+
+## Supplied typography and multimedia controls
+
+The interface now self-hosts the user-supplied Share Tech Mono font at `public/assets/fonts/share-tech-mono-regular.ttf`. It replaces the prior remote mono utility face across navigation labels, metadata, status text, and dashboard controls. The supplied multimedia artwork was converted into optimized transparent WebP controls under `public/assets/icons/` and is used for Home, Stream, YouTube, Profile, play, and sharing actions. Verify that the supplied asset licenses permit production redistribution before public launch.
+
+The opening screen is now a logo-only reveal. It displays the RADARMusic page icon without a text lockup or entry button, uses a short pop animation, dismisses automatically, and respects reduced-motion preferences.
+
+## Pre-save links
+
+The release resolver accepts supported public pre-save campaign links in addition to Spotify and Apple Music release URLs. Supported host families currently include Feature.fm/`ffm.to`, Linkfire/`lnk.to`, PreSave, PUSH.fm, HyperFollow/DistroKid, Found.ee, FanLink, Amuse, Hypeddit, ToneDen, Laylo, and OrchardGo.
+
+For a supported pre-save URL, the server reads only public HTML metadata such as Open Graph title, description, artwork, and an exposed release date. It returns the original campaign provider as the verified continuation action and generates transparent post-release search destinations for the major stores. The Stream surface becomes a pre-save assistance card and sends the fan to the original provider to complete authorization.
+
+RADARMusic does not collect a fan’s Spotify or Apple Music password, does not claim that a save is complete, and does not call a provider save endpoint on the fan’s behalf. Spotify library saves require authorized user access, while Apple Music pre-add availability is coordinated through the label or distributor. Feature.fm likewise documents that pre-saving involves fan account authorization and can later convert the same campaign into a released smart link.
+
+References: [Spotify Web API](https://developer.spotify.com/documentation/web-api), [Apple Music pre-adds](https://artists.apple.com/support/1118-apple-music-pre-adds), and [Feature.fm pre-save smart links](https://help.feature.fm/articles/360043281971-Creating-A-Pre-Save-Smart-Link).
