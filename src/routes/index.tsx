@@ -15,7 +15,7 @@ import { useRelease } from "@/lib/release-store";
 import { release } from "@/data/release";
 import { DEFAULT_THEME, deriveTheme, themeStyle, type PortalTheme } from "@/lib/theme";
 
-const title = `${release.artist} — ${release.title} | RADAR Release Portal`;
+const title = `The RADARMusic: ${release.artist} - ${release.title}`;
 const description = `Stream ${release.title} by ${release.artist} on every store, watch the video, browse reels and shorts, and read the press coverage — all from one RADAR release portal.`;
 
 export const Route = createFileRoute("/")({
@@ -38,6 +38,10 @@ function Portal() {
   const [active, setActive] = useActiveSegment();
   const release = useRelease();
   const [theme, setTheme] = useState<PortalTheme>(DEFAULT_THEME);
+
+  useEffect(() => {
+    document.title = `The RADARMusic: ${release.artist} - ${release.title}`;
+  }, [release.artist, release.title]);
 
   useEffect(() => {
     let mounted = true;

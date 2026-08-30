@@ -14,9 +14,9 @@ import { loadRelease, resetRelease, saveRelease } from "@/lib/release-store";
 import { DEFAULT_THEME, deriveTheme, themeStyle, type PortalTheme } from "@/lib/theme";
 import { isHttpsUrl, isSupportedEmbedUrl } from "@/lib/urls";
 
-const title = "Creator Studio — Edit your RADAR release portal";
+const title = "Creator - The RADARMusic";
 const description =
-  "Prepare the release information, approved media, links, and visual identity for your RADAR release portal.";
+  "Creator mode for The RADARMusic — prepare release information, approved media, links, and visual identity.";
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 type AssetKey = "artwork" | "backgroundImage" | "artistImage";
@@ -226,7 +226,7 @@ function Studio() {
       <div className="mx-auto w-full max-w-6xl px-5 pt-8 sm:px-8">
         <header className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
           <div>
-            <p className="label-mono text-primary/70">RADAR / Creator Studio</p>
+            <p className="label-mono text-primary/70">Creator - The RADARMusic</p>
             <h1 className="mt-2 max-w-3xl font-display text-4xl font-semibold tracking-tight text-foreground sm:text-6xl">
               Build the release portal.
             </h1>

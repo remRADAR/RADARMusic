@@ -77,14 +77,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "RADAR Music — Artist Release Portals" },
+      { title: "The RADARMusic" },
       {
         name: "description",
         content:
-          "RADAR Music builds hosted release portals: one link with every store, video, short and press feature for an artist campaign.",
+          "The RADARMusic brings every artist release store, video, short, and press feature together in one human-friendly portal.",
       },
-      { name: "author", content: "RADAR Music" },
-      { property: "og:site_name", content: "RADAR Music" },
+      { name: "author", content: "RADARCharts by REM" },
+      { property: "og:site_name", content: "The RADARMusic" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
