@@ -41,6 +41,14 @@ Roles are read from server-managed Supabase `app_metadata.role` values. Supporte
 
 Set `SUPABASE_ANON_KEY` in addition to the existing Supabase URL and service-role key. The service-role key must remain server-only. The auth flow assumes email/password sign-in is enabled in Supabase Auth and that role metadata is assigned through a trusted administrative process, never from client input.
 
+## Creator Studio finalization workflow
+
+After authentication, `/dashboard` opens the Creator Studio rather than the former metrics-only view. The Studio collects artist and release information, cover artwork, an independent portal background, an artist profile image, listening destinations, official YouTube video links, Shorts links, and Press links. Uploaded images are validated in the browser as JPG, PNG, WebP, or GIF files no larger than 5 MB and are previewed immediately.
+
+The draft is saved with a debounced browser-local key so a refresh does not discard in-progress work. The readiness card identifies missing release identity, cover, profile image, background, listening, Watch, Shorts, and Press content; submission stays disabled until all required checks pass. `Preview portal` applies the same release object to the same public portal renderer rather than constructing a separate mock preview.
+
+Cover artwork drives a weighted HSL palette in `src/theme.js`, including primary, secondary, accent, background, surfaces, border, glow, and gradient values. The palette is applied through the existing CSS variable architecture, while the uploaded portal background remains an independent image layer. Creator-supplied Watch, Shorts, Press, and profile content replace the prior demo-only surfaces in the live portal.
+
 ## Social sharing metadata
 
 The page head now includes canonical URL, Open Graph, and Twitter Card tags with the RADARMusic title, description, and WEBP artwork fallback. When a release is resolved, the browser updates the document title, canonical URL, Open Graph title/description/image, and Twitter title/description/image to the matched release identity. Published release routes should set the same values during server-side or static page generation so social crawlers receive release-specific cards without executing browser JavaScript.
