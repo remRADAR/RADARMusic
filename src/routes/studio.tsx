@@ -42,7 +42,7 @@ function Field({
   placeholder?: string;
 }) {
   const classes =
-    "mt-1.5 w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-ring";
+    "mt-1.5 min-w-0 w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-ring";
   return (
     <label className="block">
       <span className="label-mono text-muted-foreground">{label}</span>
@@ -81,8 +81,8 @@ function ImageUpload({
   onRemove: (key: AssetKey) => void;
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border bg-card/40 p-4">
-      <div className="flex items-center justify-between gap-3">
+    <div className="min-w-0 rounded-2xl border border-dashed border-border bg-card/40 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="label-mono text-muted-foreground">{label}</span>
         {value ? (
           <button
@@ -266,9 +266,9 @@ function Studio() {
           </div>
         ) : null}
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(300px,.8fr)]">
-          <div className="space-y-6">
-            <section className="glass-panel rounded-3xl p-5 sm:p-7">
-              <h2 className="font-display text-xl font-semibold text-foreground">
+          <div className="min-w-0 space-y-6">
+            <section className="min-w-0 glass-panel rounded-3xl p-5 sm:p-7">
+              <h2 className="min-w-0 font-display text-xl font-semibold text-foreground">
                 01 · Release information
               </h2>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -328,15 +328,15 @@ function Studio() {
               </div>
             </section>
 
-            <section className="glass-panel rounded-3xl p-5 sm:p-7">
-              <h2 className="font-display text-xl font-semibold text-foreground">
+            <section className="min-w-0 glass-panel rounded-3xl p-5 sm:p-7">
+              <h2 className="min-w-0 font-display text-xl font-semibold text-foreground">
                 02 · Visual identity
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 Cover artwork derives the portal palette automatically. The background is an
                 independent layer and can be replaced without changing the cover.
               </p>
-              <div className="mt-5 grid gap-4 md:grid-cols-3">
+              <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <ImageUpload
                   label="Cover artwork"
                   value={draft.artwork}
@@ -361,9 +361,9 @@ function Studio() {
               </div>
             </section>
 
-            <section className="glass-panel rounded-3xl p-5 sm:p-7">
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="font-display text-xl font-semibold text-foreground">
+            <section className="min-w-0 glass-panel rounded-3xl p-5 sm:p-7">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="min-w-0 font-display text-xl font-semibold text-foreground">
                   03 · Listening destinations
                 </h2>
                 <button
@@ -379,7 +379,7 @@ function Studio() {
                       },
                     ])
                   }
-                  className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-2 font-display text-xs font-semibold text-primary-foreground"
+                  className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-3 py-2 font-display text-xs font-semibold text-primary-foreground"
                 >
                   <Plus className="size-4" aria-hidden="true" /> Add
                 </button>
@@ -508,7 +508,7 @@ function Studio() {
             />
           </div>
 
-          <aside className="sticky top-5 space-y-4">
+          <aside className="min-w-0 space-y-4 lg:sticky lg:top-5">
             <section className="glass-panel rounded-3xl p-5 sm:p-6">
               <p className="label-mono text-primary/70">PORTAL READINESS</p>
               <div className="mt-4 space-y-1">
@@ -605,13 +605,13 @@ function MediaEditor<T extends VideoItem | ShortItem>({
   onChange: (items: T[]) => void;
 }) {
   return (
-    <section className="glass-panel rounded-3xl p-5 sm:p-7">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-xl font-semibold text-foreground">{title}</h2>
+    <section className="min-w-0 glass-panel rounded-3xl p-5 sm:p-7">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="min-w-0 font-display text-xl font-semibold text-foreground">{title}</h2>
         <button
           type="button"
           onClick={onAdd}
-          className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-2 font-display text-xs font-semibold text-primary-foreground"
+          className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-3 py-2 font-display text-xs font-semibold text-primary-foreground"
         >
           <Plus className="size-4" aria-hidden="true" /> Add
         </button>
@@ -682,13 +682,13 @@ function PressEditor({
   onChange: (items: PressItem[]) => void;
 }) {
   return (
-    <section className="glass-panel rounded-3xl p-5 sm:p-7">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-xl font-semibold text-foreground">06 · Press</h2>
+    <section className="min-w-0 glass-panel rounded-3xl p-5 sm:p-7">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="min-w-0 font-display text-xl font-semibold text-foreground">06 · Press</h2>
         <button
           type="button"
           onClick={onAdd}
-          className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-2 font-display text-xs font-semibold text-primary-foreground"
+          className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-3 py-2 font-display text-xs font-semibold text-primary-foreground"
         >
           <Plus className="size-4" aria-hidden="true" /> Add
         </button>
